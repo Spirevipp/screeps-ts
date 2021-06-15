@@ -35,7 +35,7 @@ declare global {
   }
 }
 
-Memory.maxCreeps.maxBuildersRC1 = 4;
+Memory.maxCreeps.maxBuildersRC1 = 2;
 Memory.maxCreeps.maxHarvestersRC1 = 4;
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
@@ -50,10 +50,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
       delete Memory.creeps[name];
     }
   }
+
   const harvestersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "harvesterRC1");
   const buildersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "builderRC1");
   if (harvestersRC1.length < Memory.maxCreeps.maxHarvestersRC1) {
-    const err = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, MOVE], `harvesterRC1_${Game.time}`, {
+    const err = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, CARRY, MOVE, MOVE], `harvesterRC1_${Game.time}`, {
       memory: {
         role: "harvesterRC1",
         working: false
@@ -61,7 +62,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     });
     console.log(`Tried to spawn harvester: ${err}`);
   } else if (buildersRC1.length < Memory.maxCreeps.maxBuildersRC1) {
-    const err = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, MOVE], `builderRC1_${Game.time}`, {
+    const err = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, CARRY, MOVE, MOVE], `builderRC1_${Game.time}`, {
       memory: {
         role: "builderRC1",
         working: false

@@ -1,13 +1,13 @@
 export const roleHarvesterRC1 = {
   /** @param {Creep} creep **/
   run(creep: Creep): void {
-    if (!creep.memory.working && creep.store.getFreeCapacity("energy") >= 0) {
+    if (!creep.memory.working && creep.store.getUsedCapacity("energy") === 0) {
       creep.memory.working = true;
       creep.say("🔄 harvest");
     }
     if (creep.memory.working && creep.store.getFreeCapacity("energy") === 0) {
       creep.memory.working = false;
-      creep.say("💼 delivery");
+      creep.say("💼 deliver");
     }
 
     if (creep.memory.working) {
