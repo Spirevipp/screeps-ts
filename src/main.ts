@@ -1,6 +1,8 @@
 import _ from "lodash";
 import { roleBuilderRC1 } from "role.builderRC1";
 import { roleHarvesterRC1 } from "role.harvesterRC1";
+import { roleRepairerRC1 } from "role.repairerRC1";
+import { towers } from "towers";
 // eslint-disable-next-line sort-imports
 import { ErrorMapper } from "utils/ErrorMapper";
 
@@ -8,16 +10,20 @@ declare global {
 	/*
     Example types, expand on these or remove them and add your own.
     Note: Values, properties defined here do no fully *exist* by this type definiton alone.
-          You must also give them an implemention if you would like to use them. (ex. actually setting a `role` property in a Creeps memory)
+          You must also give them an implemention if you would like to use them.
+          (ex. actually setting a `role` property in a Creeps memory)
 
-    Types added in this `global` block are in an ambient, global context. This is needed because `main.ts` is a module file (uses import or export).
-    Interfaces matching on name from @types/screeps will be merged. This is how you can extend the 'built-in' interfaces from @types/screeps.
+    Types added in this `global` block are in an ambient, global context.
+    This is needed because `main.ts` is a module file (uses import or export).
+    Interfaces matching on name from @types/screeps will be merged.
+    This is how you can extend the 'built-in' interfaces from @types/screeps.
   */
 	// Memory extension samples
 	interface Memory {
 		maxCreeps: {
 			maxHarvestersRC1: number;
 			maxBuildersRC1: number;
+			maxRepairersRC1: number;
 		};
 	}
 
@@ -36,7 +42,8 @@ declare global {
 }
 
 Memory.maxCreeps.maxBuildersRC1 = 2;
-Memory.maxCreeps.maxHarvestersRC1 = 4;
+Memory.maxCreeps.maxHarvestersRC1 = 3;
+Memory.maxCreeps.maxRepairersRC1 = 2;
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -53,6 +60,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
 	const harvestersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "harvesterRC1");
 	const buildersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "builderRC1");
+	const repairersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "repairerRC1");
 	if (harvestersRC1.length < Memory.maxCreeps.maxHarvestersRC1) {
 		const err = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, CARRY, MOVE, MOVE], `harvesterRC1_${Game.time}`, {
 			memory: {
@@ -69,6 +77,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
 			}
 		});
 		console.log(`Tried to spawn builder: ${err}`);
+	} else if (repairersRC1.length < Memory.maxCreeps.maxRepairersRC1) {
+		const err = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, CARRY, MOVE, MOVE], `repairerRC1_${Game.time}`, {
+			memory: {
+				role: "repairerRC1",
+				working: false
+			}
+		});
+		console.log(`Tried to spawn repairer: ${err}`);
 	}
 	// Run each creep code
 	// added extra role check for compatability
@@ -82,8 +98,20 @@ export const loop = ErrorMapper.wrapLoop(() => {
 			roleHarvesterRC1.run(creep);
 		} else if (creep.memory.role === "builderRC1" || creep.memory.role === "builderT1") {
 			roleBuilderRC1.run(creep);
+		} else if (creep.memory.role === "repairerRC1") {
+			roleRepairerRC1.run(creep);
 		} else {
 			console.log(`Invalid role for ${name}`);
+		}
+	}
+	// Tower code TODO
+	// might work
+	const towerList = Game.spawns.Spawn1.room.find(FIND_MY_STRUCTURES, {
+		filter: { structureType: STRUCTURE_TOWER }
+	});
+	for (const tower of towerList) {
+		if (tower.structureType === STRUCTURE_TOWER) {
+			towers.run(tower);
 		}
 	}
 });
