@@ -1,6 +1,8 @@
 /*
 	Picks up energy from floor, containers and tombstones and moves to expansions and spawns
 	only need MOVE and CARRY
+
+	TODO does not work yet
 */
 export const roleMoverRC2 = {
 	/** @param {Creep} creep **/
