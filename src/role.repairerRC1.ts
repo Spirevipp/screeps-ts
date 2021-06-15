@@ -1,3 +1,8 @@
+/*
+	Fully integrated repairer for early buildings, and construction if idle
+	example 300 energy worker: [WORK, CARRY, CARRY, MOVE, MOVE]
+	example minimal (150) energy worker: [WORK, CARRY, MOVE]
+*/
 export const roleRepairerRC1 = {
 	/** @param {Creep} creep **/
 	run(creep: Creep): void {

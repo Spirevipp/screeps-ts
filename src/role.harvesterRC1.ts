@@ -1,3 +1,8 @@
+/*
+	Fully integrated harvester for energy for spawn and controller
+	example 300 energy worker: [WORK, CARRY, CARRY, MOVE, MOVE]
+	example minimal (150) energy worker: [WORK, CARRY, MOVE]
+*/
 export const roleHarvesterRC1 = {
 	/** @param {Creep} creep **/
 	run(creep: Creep): void {
@@ -12,8 +17,8 @@ export const roleHarvesterRC1 = {
 
 		if (creep.memory.working) {
 			const sources = creep.room.find(FIND_SOURCES_ACTIVE);
-			if (creep.harvest(sources[0]) === ERR_NOT_IN_RANGE) {
-				creep.moveTo(sources[0], {
+			if (creep.harvest(sources[1]) === ERR_NOT_IN_RANGE) {
+				creep.moveTo(sources[1], {
 					visualizePathStyle: { stroke: "#ffaa00" }
 				});
 			}
