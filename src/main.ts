@@ -72,12 +72,11 @@ export const loop = ErrorMapper.wrapLoop(() => {
 		{}
 	);
 	console.log(Object.keys(currentCreeps).toString());
-
-	console.log(
+	/* console.log(
 		_.mapValues(currentCreeps, function (name: Record<string, unknown>, role: string) {
 			return `${role}: ${Object.keys(name).length}`;
 		})
-	);
+	); */
 
 	const harvestersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "harvesterRC1");
 	const buildersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "builderRC1");
