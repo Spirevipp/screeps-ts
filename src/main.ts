@@ -64,8 +64,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
 		Game.creeps,
 		function (result: { [key: string]: { [key: string]: Creep } }, creep, key: string) {
 			const role = creep.memory.role;
-			// eslint-disable-next-line
-			// @ts-ignore
 			result[role] = { [key]: creep };
 			return result;
 		},
