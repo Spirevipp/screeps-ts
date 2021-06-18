@@ -42,8 +42,10 @@ declare global {
 }
 
 Memory.maxCreeps.maxBuildersRC1 = 2;
-Memory.maxCreeps.maxHarvestersRC1 = 2;
-Memory.maxCreeps.maxRepairersRC1 = 2;
+Memory.maxCreeps.maxHarvestersRC1 = 5;
+Memory.maxCreeps.maxRepairersRC1 = 1;
+
+const currentSpawn = "Spawn1";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -58,46 +60,45 @@ export const loop = ErrorMapper.wrapLoop(() => {
 		}
 	}
 
+	const currentCreeps = _.reduce(
+		Game.creeps,
+		function (result, creep, key: string) {
+			const role = creep.memory.role;
+			// eslint-disable-next-line
+			// @ts-ignore
+			result[role] = { [key]: creep };
+			return result;
+		},
+		{}
+	);
+	console.log(Object.keys(currentCreeps).toString());
+
+	console.log(
+		_.mapValues(currentCreeps, function (name: Record<string, unknown>, role: string) {
+			return `${role}: ${Object.keys(name).length}`;
+		})
+	);
+
 	const harvestersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "harvesterRC1");
 	const buildersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "builderRC1");
 	const repairersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "repairerRC1");
 	console.log(`Harvesters: ${harvestersRC1.length}, builders: ${buildersRC1.length}, repairers ${repairersRC1.length}`);
 	if (harvestersRC1.length < Memory.maxCreeps.maxHarvestersRC1) {
-		const err = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, CARRY, MOVE, MOVE], `harvesterRC1_${Game.time}`, {
-			memory: {
-				role: "harvesterRC1",
-				working: false
-			}
-		});
-		console.log(`Tried to spawn harvester: ${err}`);
+		const parts = [WORK, CARRY, CARRY, MOVE, MOVE];
+		spawnCreep("harvesterRC1", parts);
 	} else if (buildersRC1.length < Memory.maxCreeps.maxBuildersRC1) {
-		const err = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, CARRY, MOVE, MOVE], `builderRC1_${Game.time}`, {
-			memory: {
-				role: "builderRC1",
-				working: false
-			}
-		});
-		console.log(`Tried to spawn builder: ${err}`);
+		const parts = [WORK, CARRY, CARRY, MOVE, MOVE];
+		spawnCreep("builderRC1", parts);
 	} else if (repairersRC1.length < Memory.maxCreeps.maxRepairersRC1) {
-		const err = Game.spawns.Spawn1.spawnCreep([WORK, CARRY, CARRY, MOVE, MOVE], `repairerRC1_${Game.time}`, {
-			memory: {
-				role: "repairerRC1",
-				working: false
-			}
-		});
-		console.log(`Tried to spawn repairer: ${err}`);
+		const parts = [WORK, CARRY, CARRY, MOVE, MOVE];
+		spawnCreep("repairerRC1", parts);
 	}
 	// Run each creep code
-	// added extra role check for compatability
 	for (const name in Game.creeps) {
 		const creep = Game.creeps[name];
-		if (
-			creep.memory.role === "harvesterRC1" ||
-			creep.memory.role === "harvesterT1" ||
-			creep.memory.role === "upgraderT1"
-		) {
+		if (creep.memory.role === "harvesterRC1") {
 			roleHarvesterRC1.run(creep);
-		} else if (creep.memory.role === "builderRC1" || creep.memory.role === "builderT1") {
+		} else if (creep.memory.role === "builderRC1") {
 			roleBuilderRC1.run(creep);
 		} else if (creep.memory.role === "repairerRC1") {
 			roleRepairerRC1.run(creep);
@@ -116,3 +117,26 @@ export const loop = ErrorMapper.wrapLoop(() => {
 		}
 	}
 });
+
+function spawnCreep(role: string, bodyParts: BodyPartConstant[]) {
+	const out = Game.spawns[currentSpawn].spawnCreep(bodyParts, `${role}_${Game.time}`, {
+		memory: {
+			role,
+			working: false
+		}
+	});
+	switch (out) {
+		case 0:
+			console.log(`Spawning a ${role}`);
+			break;
+		case -4:
+			console.log(`Tried to spawn a ${role}, but spawner is busy`);
+			break;
+		case -6:
+			console.log(`Tried to spawn a ${role}, but we do not have enough energy`);
+			break;
+
+		default:
+			break;
+	}
+}

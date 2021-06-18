@@ -6,8 +6,9 @@ export const towers = {
 			}
 		});
 
-		if (closestDamagedStructure) {
-			// console.log(`Tower repairing: ${closestDamagedStructure.pos}`);
+		if (closestDamagedStructure != null) {
+			// eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+			console.log(`Tower repairing: ${closestDamagedStructure.structureType} ${closestDamagedStructure.pos}`);
 			tower.repair(closestDamagedStructure);
 		}
 
