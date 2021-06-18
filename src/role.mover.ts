@@ -4,27 +4,27 @@
 
 	TODO does not work yet
 */
-export const roleMoverRC2 = {
+export const roleMover = {
 	/** @param {Creep} creep **/
 	run(creep: Creep): void {
-		if (!creep.memory.working && creep.carry.energy === 0) {
+		if (!creep.memory.working && creep.store.getUsedCapacity("energy") === 0) {
 			creep.memory.working = true;
-			creep.say("Collecting");
+			creep.say("🖐 collect");
 		}
-		if (creep.memory.working && creep.carry.energy >= creep.carryCapacity / 2) {
+		if (creep.memory.working && creep.store.getFreeCapacity("energy") === 0) {
 			creep.memory.working = false;
-			creep.say("LUL");
+			creep.say("💼 deliver");
 		}
 		if (creep.memory.working) {
-			const sources = creep.room.find(FIND_STRUCTURES, {
-				filter: structure => {
-					return structure.structureType === STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > 0;
+			const source = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
+				filter: resource => {
+					return resource.resourceType === RESOURCE_ENERGY;
 				}
 			});
 			// console.log("source:    " + sources[0]);
-			if (sources.length > 0) {
-				if (creep.withdraw(sources[0], RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) {
-					creep.moveTo(sources[0]);
+			if (source != null) {
+				if (creep.pickup(source) === ERR_NOT_IN_RANGE) {
+					creep.moveTo(source);
 				}
 			}
 		} else {

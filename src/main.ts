@@ -1,7 +1,7 @@
 import _ from "lodash";
-import { roleBuilderRC1 } from "role.builderRC1";
-import { roleHarvesterRC1 } from "role.harvesterRC1";
-import { roleRepairerRC1 } from "role.repairerRC1";
+import { roleBuilder } from "role.builder";
+import { roleHarvesterStarter } from "role.harvesterStarter";
+import { roleRepairer } from "role.repairer";
 import { towers } from "towers";
 // eslint-disable-next-line sort-imports
 import { ErrorMapper } from "utils/ErrorMapper";
@@ -21,9 +21,12 @@ declare global {
 	// Memory extension samples
 	interface Memory {
 		maxCreeps: {
-			maxHarvestersRC1: number;
-			maxBuildersRC1: number;
-			maxRepairersRC1: number;
+			maxHarvestersStarter: number;
+			maxHarvesters: number;
+			maxBuilders: number;
+			maxRepairers: number;
+			maxUpgraders: number;
+			maxMoverers: number;
 		};
 	}
 
@@ -40,10 +43,15 @@ declare global {
 		}
 	}
 }
-
-Memory.maxCreeps.maxBuildersRC1 = 2;
-Memory.maxCreeps.maxHarvestersRC1 = 5;
-Memory.maxCreeps.maxRepairersRC1 = 1;
+// Starter
+Memory.maxCreeps.maxHarvestersStarter = 1; // Skal kun hente energy til spawn for raskere start
+// Tierless, hver rolle må ha sine bodypart definisjoner
+Memory.maxCreeps.maxHarvesters = 1; // Skal stå foran source og droppe energy på bakken
+Memory.maxCreeps.maxBuilders = 1; // Plukker opp energy og bygger, hvis tom reparere, hvis tom upgrade
+// repairer kan droppes når towers e tilgjengelig, sett extra inn i builders
+Memory.maxCreeps.maxRepairers = 1; // Plukker opp energy og reparer, hvis tom bygge, hvis tom upgrade
+Memory.maxCreeps.maxUpgraders = 1; // Plukker opp energy og upgrade RCL
+Memory.maxCreeps.maxMoverers = 1; // Plukker opp energy og flytter til structures
 
 const currentSpawn = "Spawn1";
 
@@ -70,42 +78,43 @@ export const loop = ErrorMapper.wrapLoop(() => {
 		{}
 	);
 	console.log(Object.keys(currentCreeps).toString());
-	/* console.log(
-		_.mapValues(currentCreeps, function (name: Record<string, unknown>, role: string) {
-			return `${role}: ${Object.keys(name).length}`;
-		})
-	); */
 
-	const harvestersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "harvesterRC1");
-	const buildersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "builderRC1");
-	const repairersRC1 = _.filter(Game.creeps, creep => creep.memory.role === "repairerRC1");
-	console.log(`Harvesters: ${harvestersRC1.length}, builders: ${buildersRC1.length}, repairers ${repairersRC1.length}`);
-	if (harvestersRC1.length < Memory.maxCreeps.maxHarvestersRC1) {
+	const creepAmounts: { [key: string]: number } = {};
+
+	for (const key in currentCreeps) {
+		creepAmounts[key] = Object.keys(currentCreeps[key]).length;
+	}
+
+	const harvesters = _.filter(Game.creeps, creep => creep.memory.role === "harvester");
+	const builders = _.filter(Game.creeps, creep => creep.memory.role === "builder");
+	const repairers = _.filter(Game.creeps, creep => creep.memory.role === "repairer");
+	console.log(`Harvesters: ${harvesters.length}, builders: ${builders.length}, repairers ${repairers.length}`);
+	if (harvesters.length < Memory.maxCreeps.maxHarvesters) {
 		const parts = [WORK, CARRY, CARRY, MOVE, MOVE];
-		spawnCreep("harvesterRC1", parts);
-	} else if (buildersRC1.length < Memory.maxCreeps.maxBuildersRC1) {
+		spawnCreep("harvester", parts);
+	} else if (builders.length < Memory.maxCreeps.maxBuilders) {
 		const parts = [WORK, CARRY, CARRY, MOVE, MOVE];
-		spawnCreep("builderRC1", parts);
-	} else if (repairersRC1.length < Memory.maxCreeps.maxRepairersRC1) {
+		spawnCreep("builder", parts);
+	} else if (repairers.length < Memory.maxCreeps.maxRepairers) {
 		const parts = [WORK, CARRY, CARRY, MOVE, MOVE];
-		spawnCreep("repairerRC1", parts);
+		spawnCreep("repairer", parts);
 	}
 	// Run each creep code
 	for (const name in Game.creeps) {
 		const creep = Game.creeps[name];
-		if (creep.memory.role === "harvesterRC1") {
-			roleHarvesterRC1.run(creep);
-		} else if (creep.memory.role === "builderRC1") {
-			roleBuilderRC1.run(creep);
-		} else if (creep.memory.role === "repairerRC1") {
-			roleRepairerRC1.run(creep);
+		if (creep.memory.role === "harvester") {
+			roleHarvesterStarter.run(creep);
+		} else if (creep.memory.role === "builder") {
+			roleBuilder.run(creep);
+		} else if (creep.memory.role === "repairer") {
+			roleRepairer.run(creep);
 		} else {
 			console.log(`Invalid role for ${name}`);
 		}
 	}
 	// Tower code TODO
 	// might work
-	const towerList = Game.spawns.Spawn1.room.find(FIND_MY_STRUCTURES, {
+	const towerList = Game.spawns[currentSpawn].room.find(FIND_MY_STRUCTURES, {
 		filter: { structureType: STRUCTURE_TOWER }
 	});
 	for (const tower of towerList) {

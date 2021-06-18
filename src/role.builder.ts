@@ -3,7 +3,7 @@
 	example 300 energy worker: [WORK, CARRY, CARRY, MOVE, MOVE]
 	example minimal (150) energy worker: [WORK, CARRY, MOVE]
 */
-export const roleBuilderRC1 = {
+export const roleBuilder = {
 	/** @param {Creep} creep **/
 	run(creep: Creep): void {
 		if (creep.memory.working && creep.store.getUsedCapacity("energy") === 0) {

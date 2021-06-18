@@ -1,9 +1,9 @@
 /*
-	Fully integrated harvester for energy for spawn and controller
+	Fully integrated harvester for energy for spawn earlygame
 	example 300 energy worker: [WORK, CARRY, CARRY, MOVE, MOVE]
 	example minimal (150) energy worker: [WORK, CARRY, MOVE]
 */
-export const roleHarvesterRC1 = {
+export const roleHarvesterStarter = {
 	/** @param {Creep} creep **/
 	run(creep: Creep): void {
 		if (!creep.memory.working && creep.store.getUsedCapacity("energy") === 0) {
@@ -16,22 +16,18 @@ export const roleHarvesterRC1 = {
 		}
 
 		if (creep.memory.working) {
-			const sources = creep.room.find(FIND_SOURCES_ACTIVE);
-			if (creep.harvest(sources[0]) === ERR_NOT_IN_RANGE) {
-				creep.moveTo(sources[0], {
+			// const sources = creep.room.find(FIND_SOURCES_ACTIVE);
+			const source = creep.pos.findClosestByRange(FIND_SOURCES_ACTIVE);
+			if (source !== null && creep.harvest(source) === ERR_NOT_IN_RANGE) {
+				creep.moveTo(source, {
 					visualizePathStyle: { stroke: "#ffaa00" }
 				});
 			}
 		} else {
-			const controller = creep.room.controller;
+			// const controller = creep.room.controller;
 			const targets = creep.room.find(FIND_STRUCTURES, {
 				filter: structure => {
-					return (
-						(structure.structureType === STRUCTURE_EXTENSION ||
-							structure.structureType === STRUCTURE_SPAWN ||
-							structure.structureType === STRUCTURE_TOWER) &&
-						structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-					);
+					return structure.structureType === STRUCTURE_SPAWN && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
 				}
 			});
 			if (targets.length > 0) {
@@ -40,13 +36,13 @@ export const roleHarvesterRC1 = {
 						visualizePathStyle: { stroke: "#ffffff" }
 					});
 				}
-			} else if (controller !== undefined) {
+			} /* else if (controller !== undefined) {
 				if (creep.upgradeController(controller) === ERR_NOT_IN_RANGE) {
 					creep.moveTo(controller, {
 						visualizePathStyle: { stroke: "#ffffff" }
 					});
 				}
-			}
+			} */
 		}
 	}
 };
