@@ -74,7 +74,7 @@ module.exports = {
       }
     ],
     "no-throw-literal": "error",
-    "no-trailing-spaces": "off",
+    "no-trailing-spaces": ["off", { "ignoreComments": true }],
     "no-undef-init": "error",
     "no-underscore-dangle": "warn",
     "no-var": "error",

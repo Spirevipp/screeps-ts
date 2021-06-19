@@ -18,8 +18,9 @@ declare global {
     Interfaces matching on name from @types/screeps will be merged.
     This is how you can extend the 'built-in' interfaces from @types/screeps.
   */
-	// Memory extension samples
+	// Memory variables
 	interface Memory {
+		// Store max creeps as memory variables for easier access in screeps website
 		maxCreeps: {
 			maxHarvestersStarter: number;
 			maxHarvesters: number;
@@ -30,9 +31,13 @@ declare global {
 		};
 	}
 
+	// Creep memory variables
+	// role should always be populated with
+	// most creeps use the working var aswell
 	interface CreepMemory {
 		role: string;
 		working?: boolean;
+		target?: number[];
 	}
 
 	// Syntax for adding proprties to `global` (ex "global.log")
@@ -43,17 +48,21 @@ declare global {
 		}
 	}
 }
+const currentSpawn = "Spawn1"; // Blærgh
+
+// Dette skal bli til sett av en energy source til hver harvester
+const sourceList = Game.spawns[currentSpawn].room.find(FIND_SOURCES);
+
 // Starter
 Memory.maxCreeps.maxHarvestersStarter = 1; // Skal kun hente energy til spawn for raskere start
 // Tierless, hver rolle må ha sine bodypart definisjoner
-Memory.maxCreeps.maxHarvesters = 1; // Skal stå foran source og droppe energy på bakken
+// Skal stå foran source og droppe energy på bakken
+Memory.maxCreeps.maxHarvesters = sourceList.length;
 Memory.maxCreeps.maxBuilders = 1; // Plukker opp energy og bygger, hvis tom reparere, hvis tom upgrade
 // repairer kan droppes når towers e tilgjengelig, sett extra inn i builders
 Memory.maxCreeps.maxRepairers = 1; // Plukker opp energy og reparer, hvis tom bygge, hvis tom upgrade
 Memory.maxCreeps.maxUpgraders = 1; // Plukker opp energy og upgrade RCL
 Memory.maxCreeps.maxMoverers = 1; // Plukker opp energy og flytter til structures
-
-const currentSpawn = "Spawn1";
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -77,14 +86,14 @@ export const loop = ErrorMapper.wrapLoop(() => {
 		},
 		{}
 	);
-	console.log(Object.keys(currentCreeps).toString());
 
 	const creepAmounts: { [key: string]: number } = {};
-
 	for (const key in currentCreeps) {
 		creepAmounts[key] = Object.keys(currentCreeps[key]).length;
 	}
+	logCreeps(creepAmounts);
 
+	// TODO gjør hele denne seksjonen til en dynamisk funksjon(?) - ingen hardkodede rolle sjekk
 	const harvesters = _.filter(Game.creeps, creep => creep.memory.role === "harvester");
 	const builders = _.filter(Game.creeps, creep => creep.memory.role === "builder");
 	const repairers = _.filter(Game.creeps, creep => creep.memory.role === "repairer");
@@ -100,6 +109,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
 		spawnCreep("repairer", parts);
 	}
 	// Run each creep code
+	// TODO gjør om til dynamisk iterasjon gjennom liste av currentCreeps
 	for (const name in Game.creeps) {
 		const creep = Game.creeps[name];
 		if (creep.memory.role === "harvester") {
@@ -123,7 +133,16 @@ export const loop = ErrorMapper.wrapLoop(() => {
 		}
 	}
 });
-
+/**
+ * Creep spawner function
+ *
+ * Tries to spawn a creep at `currentSpawn`
+ *
+ * Logs status to console
+ *
+ * @param {string} role
+ * @param {BodyPartConstant[]} bodyParts
+ */
 function spawnCreep(role: string, bodyParts: BodyPartConstant[]) {
 	const out = Game.spawns[currentSpawn].spawnCreep(bodyParts, `${role}_${Game.time}`, {
 		memory: {
@@ -145,4 +164,16 @@ function spawnCreep(role: string, bodyParts: BodyPartConstant[]) {
 		default:
 			break;
 	}
+}
+/**
+ * Prints current roles and amount of creeps per role to console
+ *
+ * @param {{ [key: string]: number }} creepAmounts
+ */
+function logCreeps(creepAmounts: { [key: string]: number }) {
+	let str = "";
+	for (const key in creepAmounts) {
+		str = `${str} ${key}: ${creepAmounts[key]}`;
+	}
+	console.log(str);
 }

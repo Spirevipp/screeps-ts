@@ -1,10 +1,13 @@
-/*
-	Fully integrated harvester for energy for spawn earlygame
-	example 300 energy worker: [WORK, CARRY, CARRY, MOVE, MOVE]
-	example minimal (150) energy worker: [WORK, CARRY, MOVE]
-*/
+/**
+ * Fully integrated harvester for energy for spawn earlygame
+ * - example 300 energy worker: `[WORK, CARRY, CARRY, MOVE, MOVE]`
+ * - example minimal (150) energy worker: `[WORK, CARRY, MOVE]`
+ */
 export const roleHarvesterStarter = {
-	/** @param {Creep} creep **/
+	/**
+	 * Executes this roles' main function
+	 * @param {Creep} creep
+	 */
 	run(creep: Creep): void {
 		if (!creep.memory.working && creep.store.getUsedCapacity("energy") === 0) {
 			creep.memory.working = true;

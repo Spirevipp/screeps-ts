@@ -1,11 +1,16 @@
-/*
-	Picks up energy from floor, containers and tombstones and moves to expansions and spawns
-	only need MOVE and CARRY
+import { baseRole } from "baseRole";
 
-	TODO does not work yet
-*/
+/**
+ *	Picks up energy from floor, tombstones and destroyed buildings
+ *	and transfers the energy to expansions, spawns and towers
+ *	- only need `MOVE` and `CARRY`
+ *
+ */
 export const roleMover = {
-	/** @param {Creep} creep **/
+	/**
+	 * Executes this roles' main function
+	 * @param {Creep} creep
+	 */
 	run(creep: Creep): void {
 		if (!creep.memory.working && creep.store.getUsedCapacity("energy") === 0) {
 			creep.memory.working = true;
@@ -16,16 +21,8 @@ export const roleMover = {
 			creep.say("💼 deliver");
 		}
 		if (creep.memory.working) {
-			const source = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
-				filter: resource => {
-					return resource.resourceType === RESOURCE_ENERGY;
-				}
-			});
-			// console.log("source:    " + sources[0]);
-			if (source != null) {
-				if (creep.pickup(source) === ERR_NOT_IN_RANGE) {
-					creep.moveTo(source);
-				}
+			if (baseRole.findEnergy(creep) === null) {
+				console.log(`${creep.name} has no available energy to pickup`);
 			}
 		} else {
 			const targets = creep.room.find(FIND_STRUCTURES, {
